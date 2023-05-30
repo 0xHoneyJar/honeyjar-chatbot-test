@@ -52,167 +52,148 @@ const getEssay = async (linkObj: { url: string; title: string }) => {
   const { title, url } = linkObj;
 
   let essay: PGEssay = {
-    title: "",
     url: "",
-    date: "",
-    thanks: "",
     content: "",
     length: 0,
     tokens: 0,
     chunks: [],
   };
 
-  const fullLink = BASE_URL + url;
+  const fullLink = url;
   const html = await axios.get(fullLink);
   const $ = cheerio.load(html.data);
-  const div = $("table");
 
-  div.each((i, table) => {
-    if (i === 1) {
-      const text = $(table).text();
+  // start from the body
+  let body = $("body");
 
-      let cleanedText = text.replace(/\s+/g, " ");
-      cleanedText = cleanedText.replace(/\.([a-zA-Z])/g, ". $1");
+  // target the first div
+  let firstDiv = body.children("div").first();
 
-      const date = cleanedText.match(/([A-Z][a-z]+ [0-9]{4})/);
-      let dateStr = "";
-      let textWithoutDate = "";
+  // target the second div within the first div
+  let secondDiv = firstDiv.children("div").eq(1);
 
-      if (date) {
-        dateStr = date[0];
-        textWithoutDate = cleanedText.replace(date[0], "");
-      }
+  // target the first div within the second div
+  let nestedFirstDiv = secondDiv.children("div").first();
 
-      let essayText = textWithoutDate.replace(/\n/g, " ");
-      let thanksTo = "";
+  // target the sixth div within the nested first div
+  let finalDiv = nestedFirstDiv.children("div").eq(5);
 
-      const split = essayText.split(". ").filter((s) => s);
-      const lastSentence = split[split.length - 1];
+  // target the inner child div of final div
+  let finalInnerDiv = finalDiv.children("div").first();
 
-      if (lastSentence && lastSentence.includes("Thanks to")) {
-        const thanksToSplit = lastSentence.split("Thanks to");
+  let pTag = finalInnerDiv.find("p");
 
-        if (
-          thanksToSplit[1].trim()[thanksToSplit[1].trim().length - 1] === "."
-        ) {
-          thanksTo = "Thanks to " + thanksToSplit[1].trim();
-        } else {
-          thanksTo = "Thanks to " + thanksToSplit[1].trim() + ".";
-        }
+  let combinedText = "";
 
-        essayText = essayText.replace(thanksTo, "");
-      }
+  pTag.each((i, p) => {
+    const text = $(p).text();
 
-      const trimmedContent = essayText.trim();
+    let cleanedText = text.replace(/\s+/g, " ");
+    cleanedText = cleanedText.replace(/\.([a-zA-Z])/g, ". $1");
 
-      essay = {
-        title,
-        url: fullLink,
-        date: dateStr,
-        thanks: thanksTo.trim(),
-        content: trimmedContent,
-        length: trimmedContent.length,
-        tokens: encode(trimmedContent).length,
-        chunks: [],
-      };
-    }
+    combinedText += cleanedText + " ";
   });
+
+  essay = {
+    url: fullLink,
+    content: combinedText,
+    length: combinedText.length,
+    tokens: encode(combinedText).length,
+    chunks: [],
+  };
 
   return essay;
 };
 
-// const chunkEssay = async (essay: PGEssay) => {
-//   const { title, url, date, thanks, content, ...chunklessSection } = essay;
+const chunkEssay = async (essay: PGEssay) => {
+  const { url, content, ...chunklessSection } = essay;
 
-//   let essayTextChunks = [];
+  let essayTextChunks = [];
 
-//   if (encode(content).length > CHUNK_SIZE) {
-//     const split = content.split(". ");
-//     let chunkText = "";
+  if (encode(content).length > CHUNK_SIZE) {
+    const split = content.split(". ");
+    let chunkText = "";
 
-//     for (let i = 0; i < split.length; i++) {
-//       const sentence = split[i];
-//       const sentenceTokenLength = encode(sentence);
-//       const chunkTextTokenLength = encode(chunkText).length;
+    for (let i = 0; i < split.length; i++) {
+      const sentence = split[i];
+      const sentenceTokenLength = encode(sentence);
+      const chunkTextTokenLength = encode(chunkText).length;
 
-//       if (chunkTextTokenLength + sentenceTokenLength.length > CHUNK_SIZE) {
-//         essayTextChunks.push(chunkText);
-//         chunkText = "";
-//       }
+      if (chunkTextTokenLength + sentenceTokenLength.length > CHUNK_SIZE) {
+        essayTextChunks.push(chunkText);
+        chunkText = "";
+      }
 
-//       if (sentence[sentence.length - 1].match(/[a-z0-9]/i)) {
-//         chunkText += sentence + ". ";
-//       } else {
-//         chunkText += sentence + " ";
-//       }
-//     }
+      if (
+        sentence.length > 0 &&
+        sentence[sentence.length - 1].match(/[a-z0-9]/i)
+      ) {
+        chunkText += sentence + ". ";
+      } else {
+        chunkText += sentence + " ";
+      }
+    }
 
-//     essayTextChunks.push(chunkText.trim());
-//   } else {
-//     essayTextChunks.push(content.trim());
-//   }
+    essayTextChunks.push(chunkText.trim());
+  } else {
+    essayTextChunks.push(content.trim());
+  }
 
-//   const essayChunks = essayTextChunks.map((text) => {
-//     const trimmedText = text.trim();
+  const essayChunks = essayTextChunks.map((text) => {
+    const trimmedText = text.trim();
 
-//     const chunk: PGChunk = {
-//       essay_title: title,
-//       essay_url: url,
-//       essay_date: date,
-//       essay_thanks: thanks,
-//       content: trimmedText,
-//       content_length: trimmedText.length,
-//       content_tokens: encode(trimmedText).length,
-//       embedding: [],
-//     };
+    const chunk: PGChunk = {
+      essay_url: url,
+      content: trimmedText,
+      content_length: trimmedText.length,
+      content_tokens: encode(trimmedText).length,
+      embedding: [],
+    };
 
-//     return chunk;
-//   });
+    return chunk;
+  });
 
-//   if (essayChunks.length > 1) {
-//     for (let i = 0; i < essayChunks.length; i++) {
-//       const chunk = essayChunks[i];
-//       const prevChunk = essayChunks[i - 1];
+  if (essayChunks.length > 1) {
+    for (let i = 0; i < essayChunks.length; i++) {
+      const chunk = essayChunks[i];
+      const prevChunk = essayChunks[i - 1];
 
-//       if (chunk.content_tokens < 100 && prevChunk) {
-//         prevChunk.content += " " + chunk.content;
-//         prevChunk.content_length += chunk.content_length;
-//         prevChunk.content_tokens += chunk.content_tokens;
-//         essayChunks.splice(i, 1);
-//         i--;
-//       }
-//     }
-//   }
+      if (chunk.content_tokens < 100 && prevChunk) {
+        prevChunk.content += " " + chunk.content;
+        prevChunk.content_length += chunk.content_length;
+        prevChunk.content_tokens += chunk.content_tokens;
+        essayChunks.splice(i, 1);
+        i--;
+      }
+    }
+  }
 
-//   const chunkedSection: PGEssay = {
-//     ...essay,
-//     chunks: essayChunks,
-//   };
+  const chunkedSection: PGEssay = {
+    ...essay,
+    chunks: essayChunks,
+  };
 
-//   return chunkedSection;
-// };
+  return chunkedSection;
+};
 
 (async () => {
   const links = await getLinks();
-  console.log(links);
-  console.log(links.length);
 
-  // let essays = [];
+  let essays = [];
 
-  // for (let i = 0; i < links.length; i++) {
-  //   const essay = await getEssay(links[i]);
-  //   const chunkedEssay = await chunkEssay(essay);
-  //   essays.push(chunkedEssay);
-  // }
+  for (let i = 0; i < links.length; i++) {
+    const essay = await getEssay(links[i]);
+    console.log(essay);
+    const chunkedEssay = await chunkEssay(essay);
+    essays.push(chunkedEssay);
+  }
 
-  // const json: PGJSON = {
-  //   current_date: "2023-03-01",
-  //   author: "Paul Graham",
-  //   url: "http://www.paulgraham.com/articles.html",
-  //   length: essays.reduce((acc, essay) => acc + essay.length, 0),
-  //   tokens: essays.reduce((acc, essay) => acc + essay.tokens, 0),
-  //   essays,
-  // };
+  const json: PGJSON = {
+    url: "https://0xhoneyjar.mirror.xyz/",
+    length: essays.reduce((acc, essay) => acc + essay.length, 0),
+    tokens: essays.reduce((acc, essay) => acc + essay.tokens, 0),
+    essays,
+  };
 
-  // fs.writeFileSync("scripts/pg.json", JSON.stringify(json));
+  fs.writeFileSync("scripts/pg.json", JSON.stringify(json));
 })();
