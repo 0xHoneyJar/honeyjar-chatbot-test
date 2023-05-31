@@ -23,7 +23,7 @@ export const Footer: FC = () => {
           target="_blank"
           rel="noreferrer"
         >
-          Paul Graham
+          THJ
         </a>
         .
       </div>

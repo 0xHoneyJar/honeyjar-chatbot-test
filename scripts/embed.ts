@@ -33,7 +33,7 @@ const generateEmbeddings = async (essays: PGEssay[]) => {
       const [{ embedding }] = embeddingResponse.data.data;
 
       const { data, error } = await supabase
-        .from("pg")
+        .from("honey_jar")
         .insert({
           essay_url,
           content,

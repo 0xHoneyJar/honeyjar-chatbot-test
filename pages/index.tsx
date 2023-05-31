@@ -1,8 +1,11 @@
 import { Answer } from "@/components/Answer/Answer";
-import { Footer } from "@/components/Footer";
 import { Navbar } from "@/components/Navbar";
 import { PGChunk } from "@/types";
-import { IconArrowRight, IconExternalLink, IconSearch } from "@tabler/icons-react";
+import {
+  IconArrowRight,
+  IconExternalLink,
+  IconSearch,
+} from "@tabler/icons-react";
 import endent from "endent";
 import Head from "next/head";
 import { KeyboardEvent, useEffect, useRef, useState } from "react";
@@ -39,9 +42,9 @@ export default function Home() {
     const searchResponse = await fetch("/api/search", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ query, apiKey, matches: matchCount })
+      body: JSON.stringify({ query, apiKey, matches: matchCount }),
     });
 
     if (!searchResponse.ok) {
@@ -79,9 +82,9 @@ export default function Home() {
     const searchResponse = await fetch("/api/search", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ query, apiKey, matches: matchCount })
+      body: JSON.stringify({ query, apiKey, matches: matchCount }),
     });
 
     if (!searchResponse.ok) {
@@ -102,9 +105,9 @@ export default function Home() {
     const answerResponse = await fetch("/api/answer", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify({ prompt, apiKey })
+      body: JSON.stringify({ prompt, apiKey }),
     });
 
     if (!answerResponse.ok) {
@@ -199,19 +202,13 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Paul Graham GPT</title>
+        <title>Honey Jar GPT</title>
         <meta
           name="description"
-          content={`AI-powered search and chat for Paul Graham's essays.`}
+          content={`AI-powered search and chat for The Honey Jar.`}
         />
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1"
-        />
-        <link
-          rel="icon"
-          href="/favicon.ico"
-        />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <div className="flex flex-col h-screen">
@@ -232,7 +229,9 @@ export default function Home() {
                   <select
                     className="max-w-[400px] block w-full cursor-pointer rounded-md border border-gray-300 p-2 text-black shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm"
                     value={mode}
-                    onChange={(e) => setMode(e.target.value as "search" | "chat")}
+                    onChange={(e) =>
+                      setMode(e.target.value as "search" | "chat")
+                    }
                   >
                     <option value="search">Search</option>
                     <option value="chat">Chat</option>
@@ -294,7 +293,7 @@ export default function Home() {
                   ref={inputRef}
                   className="h-12 w-full rounded-full border border-zinc-600 pr-12 pl-11 focus:border-zinc-800 focus:outline-none focus:ring-1 focus:ring-zinc-800 sm:h-16 sm:py-2 sm:pr-16 sm:pl-16 sm:text-lg"
                   type="text"
-                  placeholder="How do I start a startup?"
+                  placeholder="What is The Honey Jar?"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={handleKeyDown}
@@ -335,7 +334,7 @@ export default function Home() {
                   </>
                 )}
 
-                <div className="font-bold text-2xl mt-6">Passages</div>
+                <div className="font-bold text-2xl mt-6">Articles</div>
                 <div className="animate-pulse mt-2">
                   <div className="h-4 bg-gray-300 rounded"></div>
                   <div className="h-4 bg-gray-300 rounded mt-2"></div>
@@ -350,16 +349,12 @@ export default function Home() {
                 <Answer text={answer} />
 
                 <div className="mt-6 mb-16">
-                  <div className="font-bold text-2xl">Passages</div>
+                  <div className="font-bold text-2xl">Articles</div>
 
                   {chunks.map((chunk, index) => (
                     <div key={index}>
                       <div className="mt-4 border border-zinc-600 rounded-lg p-4">
                         <div className="flex justify-between">
-                          <div>
-                            <div className="font-bold text-xl">{chunk.essay_title}</div>
-                            <div className="mt-1 font-bold text-sm">{chunk.essay_date}</div>
-                          </div>
                           <a
                             className="hover:opacity-50 ml-2"
                             href={chunk.essay_url}
@@ -382,10 +377,6 @@ export default function Home() {
                   <div key={index}>
                     <div className="mt-4 border border-zinc-600 rounded-lg p-4">
                       <div className="flex justify-between">
-                        <div>
-                          <div className="font-bold text-xl">{chunk.essay_title}</div>
-                          <div className="mt-1 font-bold text-sm">{chunk.essay_date}</div>
-                        </div>
                         <a
                           className="hover:opacity-50 ml-2"
                           href={chunk.essay_url}
@@ -401,11 +392,10 @@ export default function Home() {
                 ))}
               </div>
             ) : (
-              <div className="mt-6 text-center text-lg">{`AI-powered search & chat for Paul Graham's essays.`}</div>
+              <div className="mt-6 text-center text-lg">{`AI-powered search & chat for The Honey Jar.`}</div>
             )}
           </div>
         </div>
-        <Footer />
       </div>
     </>
   );

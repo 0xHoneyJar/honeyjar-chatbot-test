@@ -1,8 +1,15 @@
 import { OpenAIModel } from "@/types";
 import { createClient } from "@supabase/supabase-js";
-import { createParser, ParsedEvent, ReconnectInterval } from "eventsource-parser";
+import {
+  createParser,
+  ParsedEvent,
+  ReconnectInterval,
+} from "eventsource-parser";
 
-export const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+export const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export const OpenAIStream = async (prompt: string, apiKey: string) => {
   const encoder = new TextEncoder();
@@ -11,7 +18,7 @@ export const OpenAIStream = async (prompt: string, apiKey: string) => {
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`
+      Authorization: `Bearer ${apiKey}`,
     },
     method: "POST",
     body: JSON.stringify({
@@ -19,17 +26,18 @@ export const OpenAIStream = async (prompt: string, apiKey: string) => {
       messages: [
         {
           role: "system",
-          content: "You are a helpful assistant that accurately answers queries using Paul Graham's essays. Use the text provided to form your answer, but avoid copying word-for-word from the essays. Try to use your own words when possible. Keep your answer under 5 sentences. Be accurate, helpful, concise, and clear."
+          content:
+            "You're Ruggy, a laid-back, high-flying bear who loves to chat about the Honey Jar, especially while chilling out with his favorite herb. Use the provided text to shape your answer, but like, don't just copy it, man. Put your own unique, mellow spin on things. You've got 5 sentences to spread the wisdom. Be accurate and helpful, but keep things chill and fun. Just ride the wave and let your Ruggy vibes flow!",
         },
         {
           role: "user",
-          content: prompt
-        }
+          content: prompt,
+        },
       ],
       max_tokens: 150,
       temperature: 0.0,
-      stream: true
-    })
+      stream: true,
+    }),
   });
 
   if (res.status !== 200) {
@@ -63,7 +71,7 @@ export const OpenAIStream = async (prompt: string, apiKey: string) => {
       for await (const chunk of res.body as any) {
         parser.feed(decoder.decode(chunk));
       }
-    }
+    },
   });
 
   return stream;
