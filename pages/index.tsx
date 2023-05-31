@@ -168,7 +168,7 @@ export default function Home() {
 
     setApiKey("");
     setMatchCount(5);
-    setMode("search");
+    setMode("chat");
   };
 
   useEffect(() => {
