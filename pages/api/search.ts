@@ -6,9 +6,8 @@ export const config = {
 
 const handler = async (req: Request): Promise<Response> => {
   try {
-    const { query, apiKey, matches } = (await req.json()) as {
+    const { query, matches } = (await req.json()) as {
       query: string;
-      apiKey: string;
       matches: number;
     };
 
@@ -17,7 +16,7 @@ const handler = async (req: Request): Promise<Response> => {
     const res = await fetch("https://api.openai.com/v1/embeddings", {
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       method: "POST",
       body: JSON.stringify({

@@ -250,23 +250,6 @@ export default function Home() {
                   />
                 </div>
 
-                <div className="mt-2">
-                  <div>OpenAI API Key</div>
-                  <input
-                    type="password"
-                    placeholder="OpenAI API Key"
-                    className="max-w-[400px] block w-full rounded-md border border-gray-300 p-2 text-black shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm"
-                    value={apiKey}
-                    onChange={(e) => {
-                      setApiKey(e.target.value);
-
-                      if (e.target.value.length !== 51) {
-                        setShowSettings(true);
-                      }
-                    }}
-                  />
-                </div>
-
                 <div className="mt-4 flex space-x-2 justify-center">
                   <div
                     className="flex cursor-pointer items-center space-x-2 rounded-full bg-green-500 px-3 py-1 text-sm text-white hover:bg-green-600"
